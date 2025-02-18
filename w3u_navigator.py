@@ -6,6 +6,15 @@ import re
 import sys
 import subprocess
 from urllib.parse import urlparse
+import time
+import platform
+
+def open_in_vlc(url):
+    """Opens the given URL in VLC media player."""
+    if platform.system() == "Windows":
+        subprocess.Popen(["C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", url])
+    else:
+        subprocess.run(["vlc", url])
 
 def clean_json(content):
     """Removes trailing commas and invalid control characters from JSON to avoid parsing errors."""
@@ -34,8 +43,8 @@ def fetch_w3u(url):
             confirm = input(f"The file at {url} appears to be an M3U file. Do you want to open it in VLC? (y/n): ").strip().lower()
             if confirm == 'y':
                 print(f"Opening {url} in VLC...")
-                subprocess.run(["sleep", "1"])
-                subprocess.run(["vlc", url])
+                time.sleep(1)
+                open_in_vlc(url)
             return None
 
         response.raise_for_status()
@@ -57,8 +66,8 @@ def format_url(url):
     """Formats the URL by removing 'https://' and truncating if too long."""
     if url.startswith("https://"):
         url = url[8:]
-    if len(url) > 50:
-        url = url[:25] + "..." + url[-20:]
+    #if len(url) > 50:
+    #    url = url[:25] + "..." + url[-20:]
     return url
 
 def navigate_w3u(url, history, cache_message=None):
@@ -87,19 +96,19 @@ def navigate_w3u(url, history, cache_message=None):
         if groups:
             for i, group in enumerate(groups):
                 group_url = format_url(group.get("url", "No URL"))
-                print(f"[{option_index}] {group['name']} - {group_url}")
+                print(f"[{option_index}] {group.get('name', 'Unnamed Group')} - {group_url}")
                 options.append((group, None))
                 option_index += 1
                 group_stations = group.get("stations", [])
                 for j, station in enumerate(group_stations):
                     station_url = format_url(station.get("url", "No URL"))
-                    print(f"  [{option_index}] {station['name']} - {station_url}")
+                    print(f"  [{option_index}] {station.get('name', 'Unnamed Station')} - {station_url}")
                     options.append((station, group))
                     option_index += 1
         elif stations:
             for i, station in enumerate(stations):
                 station_url = format_url(station.get("url", "No URL"))
-                print(f"[{option_index}] {station['name']} - {station_url}")
+                print(f"[{option_index}] {station.get('name', 'Unnamed Station')} - {station_url}")
                 options.append((station, None))
                 option_index += 1
 
@@ -129,13 +138,13 @@ def navigate_w3u(url, history, cache_message=None):
             if selected_url:
                 if selected_url.endswith(".w3u") or selected_url.endswith(".json") or "raw.githubusercontent.com" in selected_url or "pastebin.com/raw" in selected_url:
                     navigate_w3u(selected_url, history, cache_message=f"new file saved in cache: {os.path.abspath(get_filename_from_url(selected_url))}\n...\n")
-                elif selected_url.endswith(".m3u") or "type=m3u_plus" in selected_url or selected_url.endswith(".mkv") or selected_url.endswith(".mp4"):
+                elif selected_url.endswith(".m3u") or "type=m3u_plus".lower() in selected_url.lower() or selected_url.endswith(".mkv") or selected_url.endswith(".mp4"):
                     print(f"Opening {selected_url} in VLC...")
-                    subprocess.run(["sleep", "1"])
-                    subprocess.run(["vlc", selected_url])
+                    time.sleep(1)
+                    open_in_vlc(selected_url)
                 else:
                     print(f"Opening {selected_url} in the default web browser...")
-                    subprocess.run(["sleep", "1"])
+                    time.sleep(1)
                     webbrowser.open(selected_url)
         elif not choice:
             # go to the previous page
