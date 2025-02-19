@@ -64,11 +64,14 @@ def fetch_w3u(url):
 
         # If the file content starts with "EXTM3U", it's an M3U file, not a JSON file.
         if response.text.strip().startswith("#EXTM3U"):
+            with open(filename, "w", encoding="utf-8") as file:
+                file.write(response.text)
+            print(f"Downloaded M3U file saved in cache: {os.path.abspath(filename)}")
             confirm = input(f"The file at {url} appears to be an M3U file. Do you want to open it in VLC? (y/n): ").strip().lower()
             if confirm == 'y':
-                print(f"Opening {url} in VLC...")
+                print(f"Opening {filename} in VLC...")
                 time.sleep(1)
-                open_in_vlc(url)
+                open_in_vlc(os.path.abspath(filename))
             return None
 
         response.raise_for_status()
