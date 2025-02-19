@@ -183,7 +183,7 @@ def navigate_w3u(url, history, cache_message=None):
             if selected_url:
                 if selected_url.endswith(".w3u") or selected_url.endswith(".json") or "raw.githubusercontent.com" in selected_url or "pastebin.com/raw" in selected_url:
                     navigate_w3u(selected_url, history, cache_message=f"new file saved in cache: {os.path.abspath(get_filename_from_url(selected_url))}\n...\n")
-                elif selected_url.endswith(".m3u") or "type=m3u_plus".lower() in selected_url.lower() or selected_url.endswith(".mkv") or selected_url.endswith(".mp4"):
+                elif selected_url.endswith(".m3u") or "type=m3u_plus".lower() in selected_url.lower():
                     try:
                         response = requests.get(selected_url)
                         response.raise_for_status()
