@@ -93,6 +93,7 @@ def navigate_w3u(url, history, cache_message=None):
         option_index = 0
         options = []
 
+        # Nested groups and stations parsing
         if groups:
             for i, group in enumerate(groups):
                 group_url = format_url(group.get("url", "No URL"))
@@ -105,6 +106,19 @@ def navigate_w3u(url, history, cache_message=None):
                     print(f"  [{option_index}] {station.get('name', 'Unnamed Station')} - {station_url}")
                     options.append((station, group))
                     option_index += 1
+                # Handle nested groups inside groups
+                nested_groups = group.get("groups", [])
+                for k, nested_group in enumerate(nested_groups):
+                    nested_group_url = format_url(nested_group.get("url", "No URL"))
+                    print(f"  [{option_index}] {nested_group.get('name', 'Unnamed Nested Group')} - {nested_group_url}")
+                    options.append((nested_group, group))
+                    option_index += 1
+                    nested_group_stations = nested_group.get("stations", [])
+                    for l, nested_station in enumerate(nested_group_stations):
+                        nested_station_url = format_url(nested_station.get("url", "No URL"))
+                        print(f"    [{option_index}] {nested_station.get('name', 'Unnamed Nested Station')} - {nested_station_url}")
+                        options.append((nested_station, nested_group))
+                        option_index += 1
         elif stations:
             for i, station in enumerate(stations):
                 station_url = format_url(station.get("url", "No URL"))
@@ -162,9 +176,10 @@ def navigate_w3u(url, history, cache_message=None):
 
 if __name__ == "__main__":
     default_url = "https://xuperlist-1.netlify.app/XUPERLISTS-1.w3u"
-    choice = input(f"Do you want to open the default start file ({default_url})? (y/n): ").strip().lower()
-    if choice == 'n':
-        start_url = input("Please enter the URL of the .w3u file you want to open: ").strip()
-    else:
-        start_url = default_url
+    #choice = input(f"Do you want to open the default start file ({default_url})? (y/n): ").strip().lower()
+    #if choice == 'n':
+    #    start_url = input("Please enter the URL of the .w3u file you want to open: ").strip()
+    #else:
+    #    start_url = default_url
+    start_url = default_url
     navigate_w3u(start_url, [])
