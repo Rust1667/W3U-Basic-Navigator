@@ -22,6 +22,27 @@ def clean_json(content):
     content = re.sub(r'[\x00-\x1F\x7F]', '', content)  # Remove control characters
     return content
 
+def validate_json(content):
+    """Validates the JSON structure to ensure it can be parsed."""
+    try:
+        json.loads(content)
+        return True
+    except json.JSONDecodeError as e:
+        print(f"JSON validation error: {e}")
+        return False
+
+def revalidate_and_clean_cache(filename):
+    """Revalidates and cleans the cached JSON file."""
+    with open(filename, "r", encoding="utf-8") as file:
+        content = file.read()
+    cleaned_content = clean_json(content)
+    if validate_json(cleaned_content):
+        with open(filename, "w", encoding="utf-8") as file:
+            file.write(cleaned_content)
+        return json.loads(cleaned_content)
+    else:
+        raise json.JSONDecodeError("Invalid JSON after revalidating and cleaning cache", cleaned_content, 0)
+
 def get_filename_from_url(url):
     """Generates a safe filename from a URL."""
     parsed_url = urlparse(url)
@@ -32,9 +53,12 @@ def fetch_w3u(url):
     """Fetches and loads a .w3u JSON file, caching it locally."""
     filename = get_filename_from_url(url)
     if os.path.exists(filename):
-        with open(filename, "r", encoding="utf-8") as file:
-            return json.load(file)
-        
+        try:
+            return revalidate_and_clean_cache(filename)
+        except json.JSONDecodeError as e:
+            print(f"Error loading cached file {filename}: {e}")
+            os.remove(filename)  # Remove corrupted cache file
+
     try:
         response = requests.get(url)
 
@@ -50,6 +74,10 @@ def fetch_w3u(url):
         response.raise_for_status()
         response.encoding = 'utf-8'  # Ensure UTF-8 decoding
         cleaned_json = clean_json(response.text)
+        
+        if not validate_json(cleaned_json):
+            raise json.JSONDecodeError("Invalid JSON after cleaning", cleaned_json, 0)
+        
         data = json.loads(cleaned_json)
         
         with open(filename, "w", encoding="utf-8") as file:
