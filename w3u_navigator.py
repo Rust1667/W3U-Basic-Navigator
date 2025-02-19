@@ -193,7 +193,12 @@ def navigate_w3u(url, history, cache_message=None):
                             open_in_vlc(selected_url)
                         else:
                             print(f"The file at {selected_url} does not appear to be a valid M3U file.")
-                            input("Press Enter to continue...")
+                            #input("Press Enter to continue...")
+                            #If the content of the file starts with "{", consider it as a .w3u file
+                            if response.text.strip().startswith("{"):
+                                navigate_w3u(selected_url, history, cache_message=f"new file saved in cache: {os.path.abspath(get_filename_from_url(selected_url))}\n...\n")
+                            else:
+                                input("Press Enter to continue...")
                     except requests.exceptions.RequestException as e:
                         print(f"Error fetching {selected_url}: {e}")
                         input("Press Enter to continue...")
@@ -216,11 +221,17 @@ def navigate_w3u(url, history, cache_message=None):
 
 
 if __name__ == "__main__":
-    default_url = "https://xuperlist-1.netlify.app/XUPERLISTS-1.w3u"
-    #choice = input(f"Do you want to open the default start file ({default_url})? (y/n): ").strip().lower()
-    #if choice == 'n':
-    #    start_url = input("Please enter the URL of the .w3u file you want to open: ").strip()
-    #else:
-    #    start_url = default_url
-    start_url = default_url
+    default_url_1 = "https://xuperlist-1.netlify.app/XUPERLISTS-1.w3u"
+    default_url_2 = "https://pastebin.com/raw/cjkaAHLh"
+    print(f"1. {default_url_1}")
+    print(f"2. {default_url_2}")
+    choice = input("Choose a default start file (1/2) or enter a custom URL: ").strip().lower()
+    if choice == '1':
+        start_url = default_url_1
+    elif choice == '2':
+        start_url = default_url_2
+    elif choice == '':
+        start_url = default_url_1
+    else:
+        start_url = input("Please enter the URL of the .w3u file you want to open: ").strip()
     navigate_w3u(start_url, [])
