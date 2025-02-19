@@ -95,8 +95,8 @@ def fetch_w3u(url):
 
 def format_url(url):
     """Formats the URL by removing 'https://' and truncating if too long."""
-    if url.startswith("https://"):
-        url = url[8:]
+    #if url.startswith("https://"):
+    #    url = url[8:]
     #if len(url) > 50:
     #    url = url[:25] + "..." + url[-20:]
     return url
