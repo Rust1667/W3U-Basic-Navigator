@@ -184,9 +184,19 @@ def navigate_w3u(url, history, cache_message=None):
                 if selected_url.endswith(".w3u") or selected_url.endswith(".json") or "raw.githubusercontent.com" in selected_url or "pastebin.com/raw" in selected_url:
                     navigate_w3u(selected_url, history, cache_message=f"new file saved in cache: {os.path.abspath(get_filename_from_url(selected_url))}\n...\n")
                 elif selected_url.endswith(".m3u") or "type=m3u_plus".lower() in selected_url.lower() or selected_url.endswith(".mkv") or selected_url.endswith(".mp4"):
-                    print(f"Opening {selected_url} in VLC...")
-                    time.sleep(1)
-                    open_in_vlc(selected_url)
+                    try:
+                        response = requests.get(selected_url)
+                        response.raise_for_status()
+                        if response.text.strip().startswith("#EXTM3U"):
+                            print(f"Opening {selected_url} in VLC...")
+                            time.sleep(1)
+                            open_in_vlc(selected_url)
+                        else:
+                            print(f"The file at {selected_url} does not appear to be a valid M3U file.")
+                            input("Press Enter to continue...")
+                    except requests.exceptions.RequestException as e:
+                        print(f"Error fetching {selected_url}: {e}")
+                        input("Press Enter to continue...")
                 else:
                     print(f"Opening {selected_url} in the default web browser...")
                     time.sleep(1)
